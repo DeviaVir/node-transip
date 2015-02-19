@@ -96,27 +96,8 @@ var transip = module.exports = {};
    */
   transip.sign = function sign(params) {
     params = utils.urlencodeParameters(params) || {};
-
-    var digest = utils.sha512asn1(params);
-    //console.log('digest', utils.sha512asn1(params));
     
-    var key = crypto.createSign('RSA-SHA512');
-    key.update(digest);
-    var signature = key.sign(transip.privateKey, 'base64');
-
-    //var key = new RSA(transip.privateKey);
-    //var signature = key.encrypt(digest, 'base64');
-
-    //console.log('signature', new Buffer(signature, 'base64').toString('ascii'));
-
-    //var key = ursa.createPrivateKey(transip.privateKey);
-    //return key.privateEncrypt(utils.sha512asn1(params), 'utf8', 'base64');
-
-    //var exec = require( 'child_process' ).exec;
-    //return Promise.promisify(exec)('echo -n "' + transip.privateKey + '" > /tmp/transip.key && openssl dgst -sha1 -sign /tmp/transip.key | openssl enc -base64');
-
-    //return ursa.createPrivateKey(transip.privateKey).hashAndSign('sha1', utils.sha512asn1(params), 'utf8', 'base64');
-    return signature;
+    return crypto.createSign('RSA-SHA512').update(params).sign(transip.privateKey, 'base64');
   };
 
 })(transip);
