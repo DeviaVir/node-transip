@@ -1,124 +1,105 @@
-var Promise = require( 'bluebird' )
-  , soap = require('soap')
-  , cookie = require('soap-cookie')
-  , moment = require('moment')
-  , uuid = require('uuid')
-  , crypto = require('crypto');
+'use strict';
 
-var Config = require( './config' )
-  , utils = require( './utils' );
+var Promise = require( 'bluebird' ),
+    soap = require('soap'),
+    cookie = require('soap-cookie'),
+    moment = require('moment'),
+    uuid = require('uuid'),
+    crypto = require('crypto');
+
+var utils = require('./utils'),
+    config = require('./config');
+
+var domainService = require(__dirname + '/lib/domainService');
 
 /**
- * Manage transip
- * @static
- * @class transip
+ * TransIP instance constructor
+ * @prototype
+ * @class  TransIP
  */
-var transip = module.exports = {};
+function TransIP(login, privateKey, data) {
+  var transipInstance = this;
+  transipInstance.data = data || {}; 
+  transipInstance.version = 5.1;
+  transipInstance.mode = 'readwrite';
+  transipInstance.endpoint = 'api.transip.nl';
+  transipInstance.login = (login ? login : config.transip.login);
+  transipInstance.privateKey = (privateKey ? privateKey : config.transip.privateKey);
 
-(function(transip) {
-  "use strict";
+  transipInstance.domainService = new domainService(this);
+  
+  return transipInstance; 
+}
 
-  transip.version = '5.1';
-  transip.mode = 'readwrite';
-  transip.endpoint = 'api.transip.nl';
-  transip.login = (Config.transip ? Config.transip.login : '');
-  transip.privateKey = (Config.transip ? Config.transip.privateKey : '');
+/**
+ * Set up the SOAP client connection
+ * @param  {String} endpoint 
+ * @param  {String} method   
+ * @param  {Hash} options  
+ * @return {Promise}          
+ */
+TransIP.prototype.createClient = function createClient(service, method, options) {
+  var transipInstance = this;
 
-  transip.createClient = function createClient(endpoint, method, options) {
-    options = options || {};
+  options = options || {};
 
-    return Promise.promisify(soap.createClient.bind(soap))('https://' + transip.endpoint + '/wsdl/?service=' + endpoint).then(function(client) {
-      var timestamp = moment.utc().unix(),
-          nonce = uuid.v4().substr(0, 30),
-          signature = utils.urlencode(transip.sign(utils.array_merge(options, 
-            { 
-              '__method': method,
-              '__service': endpoint,
-              '__hostname': transip.endpoint,
-              '__timestamp': timestamp,
-              '__nonce': nonce
-            }
-          ))),
-          Cookie = new cookie({
-            'set-cookie': [
-              'login=' + transip.login,
-              'mode=' + transip.mode,
-              'timestamp=' + timestamp,
-              'nonce=' + nonce,
-              'clientVersion=' + transip.version,
-              'signature=' + signature
-            ]
-          });
-      client.setSecurity(Cookie);
+  return Promise.promisify(soap.createClient.bind(soap))('https://' + transipInstance.endpoint + '/wsdl/?service=' + service).then(function(client) {
+    var timestamp = moment.utc().unix(),
+        nonce = uuid.v4().substr(0, 30),
+        signature = utils.urlencode(transipInstance.sign(utils.array_merge(options, 
+          { 
+            '__method': method,
+            '__service': service,
+            '__hostname': transipInstance.endpoint,
+            '__timestamp': timestamp,
+            '__nonce': nonce
+          }
+        ))),
+        Cookie = new cookie({
+          'set-cookie': [
+            'login=' + transipInstance.login,
+            'mode=' + transipInstance.mode,
+            'timestamp=' + timestamp,
+            'nonce=' + nonce,
+            'clientVersion=' + transipInstance.version,
+            'signature=' + signature
+          ]
+        });
+    client.setSecurity(Cookie);
 
-      return client;
-    });
-  };
+    return client;
+  });
+};
 
-  transip.updateDNS = function updateDNS(domain, ns1, ns2, ns3, ns4) {
-    var data = {
-          'domainName': domain, 
-          'nameservers': [{
-            'hostname': ns1,
-            'ipv4': '',
-            'ipv6': ''
-          }, {
-            'hostname': ns2,
-            'ipv4': '',
-            'ipv6': ''
-          }, {
-            'hostname': ns3,
-            'ipv4': '',
-            'ipv6': ''
-          }]
-        };
-    if(ns4 !== void 0) {
-      data[1].push({
-        'hostname': ns4,
-        'ipv4': '',
-        'ipv6': ''
-      });
-    }
-    return transip.createClient('DomainService', 'setNameservers', [data.domainName, data.nameservers]).then(function(client) {
-      return Promise.promisify(client.setNameservers.bind(client))(data).then(function(response) {
-        console.log('response', response);
-      }).catch(function(err) {
-        console.log('error', err);
-        return Promise.reject();
-      });
-    });
-  };
+/**
+ * Handle communicating with the TransIP SOAP API in one call
+ * @param  {String} service       
+ * @param  {String} method        
+ * @param  {Array} data          
+ * @param  {Mixed} formattedData Can be a hash or array
+ * @return {Promise}               
+ */
+TransIP.prototype.communicate = function communicate(service, method, data, formattedData) {
+  var transipInstance = this;
 
-  /**
-   * Helper function: Signs requests
-   * @param  {Object} params 
-   * @return {String}        
-   */
-  transip.sign = function sign(params) {
-    params = utils.urlencodeParameters(params) || {};
+  return transipInstance.createClient(service, method, data).then(function(client) {
+    console.log(client.describe().DomainServiceService.DomainServicePort[(method)]);
+    return Promise.promisify(client[(method)].bind(client))(formattedData);
+  });
+};
 
-    var digest = utils.sha512asn1(params);
-    //console.log('digest', utils.sha512asn1(params));
-    
-    var key = crypto.createSign('RSA-SHA512');
-    key.update(digest);
-    var signature = key.sign(transip.privateKey, 'base64');
+/**
+ * Helper function: Signs requests
+ * @param  {Object} params 
+ * @return {String}        
+ */
+TransIP.prototype.sign = function sign(params) {
+  var transipInstance = this;
+  params = utils.urlencodeParameters(params) || {};
 
-    //var key = new RSA(transip.privateKey);
-    //var signature = key.encrypt(digest, 'base64');
+  console.log(params);
+  
+  return crypto.createSign('RSA-SHA512').update(params).sign(transipInstance.privateKey, 'base64');
+};
 
-    //console.log('signature', new Buffer(signature, 'base64').toString('ascii'));
-
-    //var key = ursa.createPrivateKey(transip.privateKey);
-    //return key.privateEncrypt(utils.sha512asn1(params), 'utf8', 'base64');
-
-    //var exec = require( 'child_process' ).exec;
-    //return Promise.promisify(exec)('echo -n "' + transip.privateKey + '" > /tmp/transip.key && openssl dgst -sha1 -sign /tmp/transip.key | openssl enc -base64');
-
-    //return ursa.createPrivateKey(transip.privateKey).hashAndSign('sha1', utils.sha512asn1(params), 'utf8', 'base64');
-    return signature;
-  };
-
-})(transip);
-
-module.exports = transip;
+module.exports = TransIP;
