@@ -4,16 +4,16 @@ var Promise = require( 'bluebird' ),
 
 var TransIP = require( '../transip' );
 
-describe('I:transip', function() {
+describe('I:TransIP:domainService', function() {
   'use strict';
 
-  describe( 'updateDNS', function() {
+  /*describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {
       transipInstance = new TransIP();
     });
 
-    it( 'should update DNS servers', function(done) {
+    it( 'should update nameservers', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.setNameservers('nandlal.nl', 'ns01.dualdev.com', 'ns02.dualdev.com', 'ns03.dualdev.com').then(function(body) {
         // The check for promise.resolve is actually enough, but let's make sure the API isn't doing any crazy stuff 
@@ -21,6 +21,27 @@ describe('I:transip', function() {
           expect(result['SOAP-ENV:Envelope']['SOAP-ENV:Body']).to.be.ok();
         });
       }).then(done, done);
+    });
+
+    it( 'should throw error without nameservers', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setNameservers('nandlal.nl').catch(function(err) {
+        expect(err.message).to.eql('403');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain (or any arguments for that matter)', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setNameservers().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });*/
+
+  describe( 'batchCheckAvailability', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
     });
 
     it( 'should check availability of domains', function(done) {
@@ -37,6 +58,27 @@ describe('I:transip', function() {
       }).then(done, done);
     });
 
+    it( 'should throw error without any domains', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.batchCheckAvailability([]).catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without any arguments', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.batchCheckAvailability().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'checkAvailability', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
     it( 'should check availability of a registered domain', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.checkAvailability('dualdev.com').then(function(domain) {
@@ -48,6 +90,20 @@ describe('I:transip', function() {
       this.timeout(30000);
       return transipInstance.domainService.checkAvailability('dualdev-asdjkakffaeksufhusafhaskejfeawjksfhbeajvbwejgwfhjaew.com').then(function(domain) {
         expect(domain.status).to.eql('free');
+      }).then(done, done);
+    });
+
+    it( 'should throw error when there is no domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.checkAvailability('').catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw error when there are no arguments', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.checkAvailability().catch(function(err) {
+        expect(err.message).to.eql('404');
       }).then(done, done);
     });
   });
