@@ -7,37 +7,6 @@ var TransIP = require( '../transip' );
 describe('I:TransIP:domainService', function() {
   'use strict';
 
-  /*describe( 'setNameservers', function() {
-    var transipInstance;
-    beforeEach(function() {
-      transipInstance = new TransIP();
-    });
-
-    it( 'should update nameservers', function(done) {
-      this.timeout(30000);
-      return transipInstance.domainService.setNameservers('nandlal.nl', 'ns01.dualdev.com', 'ns02.dualdev.com', 'ns03.dualdev.com').then(function(body) {
-        // The check for promise.resolve is actually enough, but let's make sure the API isn't doing any crazy stuff 
-        parseString(body[1], function (err, result) {
-          expect(result['SOAP-ENV:Envelope']['SOAP-ENV:Body']).to.be.ok();
-        });
-      }).then(done, done);
-    });
-
-    it( 'should throw error without nameservers', function(done) {
-      this.timeout(30000);
-      return transipInstance.domainService.setNameservers('nandlal.nl').catch(function(err) {
-        expect(err.message).to.eql('403');
-      }).then(done, done);
-    });
-
-    it( 'should throw error without domain (or any arguments for that matter)', function(done) {
-      this.timeout(30000);
-      return transipInstance.domainService.setNameservers().catch(function(err) {
-        expect(err.message).to.eql('404');
-      }).then(done, done);
-    });
-  });*/
-
   describe( 'batchCheckAvailability', function() {
     var transipInstance;
     beforeEach(function() {
@@ -103,6 +72,74 @@ describe('I:TransIP:domainService', function() {
     it( 'should throw error when there are no arguments', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.checkAvailability().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'getWhois', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return whois information (com)', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getWhois('dualdev.com').then(function(whois) {
+        expect(whois).to.contain('DUALDEV.COM');
+        expect(whois).to.contain('Status: clientTransferProhibited');
+      }).then(done, done);
+    });
+
+    it( 'should return whois information (net)', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getWhois('sillevis.net').then(function(whois) {
+        expect(whois).to.contain('SILLEVIS.NET');
+        expect(whois).to.contain('Status: ok');
+      }).then(done, done);
+    });
+
+    it( 'should return whois error on unknown domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getWhois('askjdaskdjfhajkfhjakldfsahfkjsadhfjkasdhfjks.net').then(function(whois) {
+        expect(whois).to.contain('No match for "ASKJDASKDJFHAJKFHJAKLDFSAHFKJSADHFJKASDHFJKS.NET".');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getWhois().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'setNameservers', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should update nameservers', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setNameservers('sillevis.net', 'dana.ns.cloudflare.com', 'tim.ns.cloudflare.com').then(function(body) {
+        // The check for promise.resolve is actually enough, but let's make sure the API isn't doing any crazy stuff 
+        parseString(body[1], function (err, result) {
+          expect(result['SOAP-ENV:Envelope']['SOAP-ENV:Body']).to.be.ok();
+        });
+      }).then(done, done);
+    });
+
+    it( 'should throw error without nameservers', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setNameservers('nandlal.nl').catch(function(err) {
+        expect(err.message).to.eql('403');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain (or any arguments for that matter)', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setNameservers().catch(function(err) {
         expect(err.message).to.eql('404');
       }).then(done, done);
     });
