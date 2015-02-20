@@ -36,5 +36,19 @@ describe('I:transip', function() {
         expect(domains[1].actions[0]).to.eql('register');
       }).then(done, done);
     });
+
+    it( 'should check availability of a registered domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.checkAvailability('dualdev.com').then(function(domain) {
+        expect(domain.status).to.eql('unavailable');
+      }).then(done, done);
+    });
+
+    it( 'should check availability of a free domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.checkAvailability('dualdev-asdjkakffaeksufhusafhaskejfeawjksfhbeajvbwejgwfhjaew.com').then(function(domain) {
+        expect(domain.status).to.eql('free');
+      }).then(done, done);
+    });
   });
 });
