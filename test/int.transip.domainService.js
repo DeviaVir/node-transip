@@ -114,6 +114,20 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe.only( 'getDomainNames', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return a list of domains', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getDomainNames().then(function(domains) {
+        expect(domains.indexOf('sillevis.net')).to.be.greaterThan(0);
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {

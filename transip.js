@@ -82,6 +82,9 @@ TransIP.prototype.createClient = function createClient(service, method, options)
 TransIP.prototype.communicate = function communicate(service, method, data, formattedData) {
   var transipInstance = this;
 
+  data = data || [];
+  formattedData = formattedData || null;
+
   return transipInstance.createClient(service, method, data).then(function(client) {
     console.log(client.describe().DomainServiceService.DomainServicePort[(method)]);
     return Promise.promisify(client[(method)].bind(client))(formattedData);
