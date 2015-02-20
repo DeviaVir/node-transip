@@ -211,6 +211,34 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe( 'getAuthCode', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+    it( 'should return authCode (net)', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getAuthCode('sillevis.net').then(function(authCode) {
+        expect(authCode).to.be.ok();
+        expect(typeof authCode).to.eql('string');
+      }).then(done, done);
+    });
+
+    it( 'should throw error on unknown domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getAuthCode('askjdaskdjfhajkfhjakldfsahfkjsadhfjkasdhfjks.net').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getAuthCode().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {
