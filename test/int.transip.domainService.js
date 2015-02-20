@@ -1,6 +1,7 @@
 var Promise = require( 'bluebird' ),
     sinon = require('sinon'),
-    parseString = require('xml2js').parseString;
+    parseString = require('xml2js').parseString,
+    moment = require('moment');
 
 var TransIP = require( '../transip' );
 
@@ -128,6 +129,33 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe.only( 'getInfo', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return information', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getInfo('sillevis.net').then(function(info) {
+        expect(info.nameservers).to.be.ok();
+        expect(info.contacts.length).to.eql(3);
+        expect(info.dnsEntries).to.be.ok();
+        expect(info.branding).to.be.ok();
+        expect(info.name).to.eql('sillevis.net');
+        expect(info.isLocked).to.eql('false');
+        expect(moment(info.registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2010-05-16');
+      }).then(done, done);
+    });
+
+    it( 'should return error for domain not in account', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getInfo('dualdev.com').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {
@@ -136,7 +164,15 @@ describe('I:TransIP:domainService', function() {
 
     it( 'should update nameservers', function(done) {
       this.timeout(30000);
-      return transipInstance.domainService.setNameservers('sillevis.net', 'dana.ns.cloudflare.com', 'tim.ns.cloudflare.com').then(function(body) {
+      return transipInstance.domainService.setNameservers('sillevis.net', {
+        'hostname': 'dana.ns.cloudflare.com',
+        'ipv4': '',
+        'ipv6': ''
+      }, {
+        'hostname': 'tim.ns.cloudflare.com',
+        'ipv4': '',
+        'ipv6': ''
+      }).then(function(body) {
         // The check for promise.resolve is actually enough, but let's make sure the API isn't doing any crazy stuff 
         parseString(body[1], function (err, result) {
           expect(result['SOAP-ENV:Envelope']['SOAP-ENV:Body']).to.be.ok();
@@ -146,7 +182,7 @@ describe('I:TransIP:domainService', function() {
 
     it( 'should throw error without nameservers', function(done) {
       this.timeout(30000);
-      return transipInstance.domainService.setNameservers('nandlal.nl').catch(function(err) {
+      return transipInstance.domainService.setNameservers('sillevis.net').catch(function(err) {
         expect(err.message).to.eql('403');
       }).then(done, done);
     });

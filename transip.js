@@ -18,17 +18,14 @@ var domainService = require(__dirname + '/lib/domainService');
  * @class  TransIP
  */
 function TransIP(login, privateKey, data) {
-  var transipInstance = this;
-  transipInstance.data = data || {}; 
-  transipInstance.version = 5.1;
-  transipInstance.mode = 'readwrite';
-  transipInstance.endpoint = 'api.transip.nl';
-  transipInstance.login = (login ? login : config.transip.login);
-  transipInstance.privateKey = (privateKey ? privateKey : config.transip.privateKey);
+  this.data = data || {}; 
+  this.version = 5.1;
+  this.mode = 'readwrite';
+  this.endpoint = 'api.transip.nl';
+  this.login = (login ? login : config.transip.login);
+  this.privateKey = (privateKey ? privateKey : config.transip.privateKey);
 
-  transipInstance.domainService = new domainService(this);
-  
-  return transipInstance; 
+  this.domainService = new domainService(this);
 }
 
 /**
@@ -39,29 +36,29 @@ function TransIP(login, privateKey, data) {
  * @return {Promise}          
  */
 TransIP.prototype.createClient = function createClient(service, method, options) {
-  var transipInstance = this;
+  var _this = this;
 
   options = options || {};
 
-  return Promise.promisify(soap.createClient.bind(soap))('https://' + transipInstance.endpoint + '/wsdl/?service=' + service).then(function(client) {
+  return Promise.promisify(soap.createClient.bind(soap))('https://' + this.endpoint + '/wsdl/?service=' + service).then(function(client) {
     var timestamp = moment.utc().unix(),
         nonce = uuid.v4().substr(0, 30),
-        signature = utils.urlencode(transipInstance.sign(utils.array_merge(options, 
+        signature = utils.urlencode(_this.sign(utils.array_merge(options, 
           { 
             '__method': method,
             '__service': service,
-            '__hostname': transipInstance.endpoint,
+            '__hostname': _this.endpoint,
             '__timestamp': timestamp,
             '__nonce': nonce
           }
         ))),
         Cookie = new cookie({
           'set-cookie': [
-            'login=' + transipInstance.login,
-            'mode=' + transipInstance.mode,
+            'login=' + _this.login,
+            'mode=' + _this.mode,
             'timestamp=' + timestamp,
             'nonce=' + nonce,
-            'clientVersion=' + transipInstance.version,
+            'clientVersion=' + _this.version,
             'signature=' + signature
           ]
         });
@@ -80,14 +77,36 @@ TransIP.prototype.createClient = function createClient(service, method, options)
  * @return {Promise}               
  */
 TransIP.prototype.communicate = function communicate(service, method, data, formattedData) {
-  var transipInstance = this;
-
   data = data || [];
   formattedData = formattedData || null;
 
-  return transipInstance.createClient(service, method, data).then(function(client) {
+  return this.createClient(service, method, data).then(function(client) {
     console.log(client.describe().DomainServiceService.DomainServicePort[(method)]);
     return Promise.promisify(client[(method)].bind(client))(formattedData);
+  });
+};
+
+/**
+ * The SOAP api sometimes returns XML in a weird way, use this function to normalize it
+ * @param  {Array} array e.g. result['SOAP-ENV:Envelope']['SOAP-ENV:Body'][0]['ns1:getInfoResponse'][0]['return'][0].contacts[0]['item']
+ * @return {Array}       Normalized array
+ */
+TransIP.prototype.xmlResolver = function xmlResolver(array) {
+  var items = [];
+  return Promise.resolve(array).each(function(item) {
+    var obj = {};
+    return Promise.resolve(Object.keys(item)).each(function(key) {
+      if(key !== '$' && key.length > 0) {
+        var value = item[(key)][0]['_'];
+        if(value !== void 0) {
+          obj[(key)] = value;
+        }
+      }
+    }).then(function() {
+      items.push(obj);
+    });
+  }).then(function() {
+    return items;
   });
 };
 
@@ -97,12 +116,11 @@ TransIP.prototype.communicate = function communicate(service, method, data, form
  * @return {String}        
  */
 TransIP.prototype.sign = function sign(params) {
-  var transipInstance = this;
   params = utils.urlencodeParameters(params) || {};
 
   console.log(params);
   
-  return crypto.createSign('RSA-SHA512').update(params).sign(transipInstance.privateKey, 'base64');
+  return crypto.createSign('RSA-SHA512').update(params).sign(this.privateKey, 'base64');
 };
 
 module.exports = TransIP;
