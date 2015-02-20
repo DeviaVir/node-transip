@@ -78,6 +78,7 @@ TransIP.prototype.communicate = function communicate(service, method, data, form
   var transipInstance = this;
 
   return transipInstance.createClient(service, method, data).then(function(client) {
+    console.log(client.describe().DomainServiceService.DomainServicePort[(method)]);
     return Promise.promisify(client[(method)].bind(client))(formattedData);
   });
 };
@@ -95,8 +96,9 @@ TransIP.prototype.domainService = require(__dirname + '/lib/domainService');
  */
 TransIP.prototype.sign = function sign(params) {
   var transipInstance = this;
-
   params = utils.urlencodeParameters(params) || {};
+
+  console.log(params);
   
   return crypto.createSign('RSA-SHA512').update(params).sign(transipInstance.privateKey, 'base64');
 };

@@ -18,7 +18,7 @@ exports.urlencodeParameters = function urlencodeParameters(parameters, keyPrefix
     if(parameters[key] !== void 0) {
       var value = parameters[key];
       if(typeof value === 'object') {
-        encodedData.push(exports.urlencodeParameters(value, (encodedKey === '0' ? false : encodedKey)));
+        encodedData.push(exports.urlencodeParameters(value, encodedKey));
       }
       else {
         encodedData.push(encodedKey + '=' + exports.urlencode(value));
