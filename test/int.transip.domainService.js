@@ -129,7 +129,7 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
-  describe.only( 'getInfo', function() {
+  describe( 'getInfo', function() {
     var transipInstance;
     beforeEach(function() {
       transipInstance = new TransIP();
@@ -151,6 +151,62 @@ describe('I:TransIP:domainService', function() {
     it( 'should return error for domain not in account', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.getInfo('dualdev.com').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'batchGetInfo', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should throw error for multiple domains when one is wrong', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.batchGetInfo(['sillevis.net', 'sierveld.me']).then(function(info) {
+        console.log('info', info);
+        expect(info.length).to.eql(2);
+        expect(info[0].nameservers).to.be.ok();
+        expect(info[1].nameservers).to.be.ok();
+        expect(info[0].contacts.length).to.eql(3);
+        expect(info[1].contacts.length).to.eql(3);
+        expect(info[0].dnsEntries).to.be.ok();
+        expect(info[1].dnsEntries).to.be.ok();
+        expect(info[0].branding).to.be.ok();
+        expect(info[1].branding).to.be.ok();
+        expect(info[0].name).to.eql('sillevis.net');
+        expect(info[1].name).to.eql('sierveld.me');
+        expect(info[0].isLocked).to.eql('false');
+        expect(info[1].isLocked).to.eql('false');
+        expect(moment(info[0].registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2010-05-16');
+        expect(moment(info[1].registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2011-03-08');
+      }).then(done, done);
+    });
+
+    it( 'should throw error for multiple domains when one is wrong', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.batchGetInfo(['sillevis.net', 'dualdev.com']).catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+
+    it( 'should return information for one domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.batchGetInfo('sillevis.net').then(function(info) {
+        expect(info.nameservers).to.be.ok();
+        expect(info.contacts.length).to.eql(3);
+        expect(info.dnsEntries).to.be.ok();
+        expect(info.branding).to.be.ok();
+        expect(info.name).to.eql('sillevis.net');
+        expect(info.isLocked).to.eql('false');
+        expect(moment(info.registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2010-05-16');
+      }).then(done, done);
+    });
+
+    it( 'should return error for domain not in account', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.batchGetInfo('dualdev.com').catch(function(err) {
         expect(err.message).to.eql('102: One or more domains could not be found.');
       }).then(done, done);
     });
