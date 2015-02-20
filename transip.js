@@ -10,6 +10,8 @@ var Promise = require( 'bluebird' ),
 var utils = require('./utils'),
     config = require('./config');
 
+var domainService = require(__dirname + '/lib/domainService');
+
 /**
  * TransIP instance constructor
  * @prototype
@@ -23,7 +25,10 @@ function TransIP(login, privateKey, data) {
   transipInstance.endpoint = 'api.transip.nl';
   transipInstance.login = (login ? login : config.transip.login);
   transipInstance.privateKey = (privateKey ? privateKey : config.transip.privateKey);
-  return this; 
+
+  transipInstance.domainService = new domainService(this);
+  
+  return transipInstance; 
 }
 
 /**
@@ -82,12 +87,6 @@ TransIP.prototype.communicate = function communicate(service, method, data, form
     return Promise.promisify(client[(method)].bind(client))(formattedData);
   });
 };
-
-/**
- * DomainService class containing all methods
- * @type {Class}
- */
-TransIP.prototype.domainService = require(__dirname + '/lib/domainService');
 
 /**
  * Helper function: Signs requests
