@@ -165,7 +165,6 @@ describe('I:TransIP:domainService', function() {
     it( 'should throw error for multiple domains when one is wrong', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.batchGetInfo(['sillevis.net', 'sierveld.me']).then(function(info) {
-        console.log('info', info);
         expect(info.length).to.eql(2);
         expect(info[0].nameservers).to.be.ok();
         expect(info[1].nameservers).to.be.ok();
