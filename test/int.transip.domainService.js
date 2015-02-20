@@ -114,7 +114,7 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
-  describe.only( 'getDomainNames', function() {
+  describe( 'getDomainNames', function() {
     var transipInstance;
     beforeEach(function() {
       transipInstance = new TransIP();
