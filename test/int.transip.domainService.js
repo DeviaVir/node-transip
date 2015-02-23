@@ -861,7 +861,7 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
-  describe.only( 'getTldInfo', function() {
+  describe( 'getTldInfo', function() {
     var transipInstance;
     beforeEach(function() {
       transipInstance = new TransIP();
@@ -899,6 +899,36 @@ describe('I:TransIP:domainService', function() {
       this.timeout(30000);
       transipInstance.domainService.getTldInfo().catch(function(err) {
         expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'getCurrentDomainAction', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return info', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getCurrentDomainAction('sillevis.net').then(function(response) {
+        expect(response.name).to.eql(null);
+        expect(response.hasFailed).to.eql('false');
+        expect(response.message).to.eql(null);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getCurrentDomainAction().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should return error from transip', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getCurrentDomainAction('dualdev.com').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
       }).then(done, done);
     });
   });
