@@ -267,6 +267,124 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe( 'register', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'sillevis-test.nl'
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should return success, with different nameservers', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'sillevis-test2.nl',
+        'nameservers': {
+          'item': [{
+            'hostname': 'ns01.dualdev.com',
+            'ipv4': '',
+            'ipv6': ''
+          }, {
+            'hostname': 'ns02.dualdev.com',
+            'ipv4': '',
+            'ipv6': ''
+          }, {
+            'hostname': 'ns03.dualdev.com',
+            'ipv4': '',
+            'ipv6': ''
+          }]
+        }
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should return success, with different contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'sillevis-test2.nl',
+        'contacts': {
+          'item': [{
+            'type': 'registrant',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'info@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'administrative',
+            'firstName': 'René',
+            'middleName': null,
+            'lastName': 'van Sweeden',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'sales@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'technical',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'tech@dualdev.com',
+            'country': 'NL' // Two letter code
+          }]
+        }
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should return error, domain already registered', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'transip.nl'
+      }).catch(function(err) {
+        expect(err.message).to.eql('303: The domain \'transip.nl\' is not free and thus cannot be registered.');
+      }).then(done, done);
+    });
+
+    it( 'should return error, domain not available', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'transip.transip-test'
+      }).catch(function(err) {
+        expect(err.message).to.eql('301: This is not a valid domain name: \'transip.transip-test\'');
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {
