@@ -855,8 +855,9 @@ describe('I:TransIP:domainService', function() {
 
     it( 'should return array of TLDs', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getAllTldInfos().then(function(response) {
+      return transipInstance.domainService.getAllTldInfos().then(function(response) {
         expect(response.length).to.be.greaterThan(0);
+        console.log(response);
       }).then(done, done);
     });
   });
@@ -869,35 +870,35 @@ describe('I:TransIP:domainService', function() {
 
     it( 'should return info about .nl', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getTldInfo('nl').then(function(response) {
+      return transipInstance.domainService.getTldInfo('nl').then(function(response) {
         expect(response.name).to.eql('.nl');
       }).then(done, done);
     });
 
     it( 'should return info about .vote', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getTldInfo('vote').then(function(response) {
+      return transipInstance.domainService.getTldInfo('vote').then(function(response) {
         expect(response.name).to.eql('.vote');
       }).then(done, done);
     });
 
     it( 'should return info about .com', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getTldInfo('com').then(function(response) {
+      return transipInstance.domainService.getTldInfo('com').then(function(response) {
         expect(response.name).to.eql('.com');
       }).then(done, done);
     });
 
     it( 'should catch error for .thisdoesnotexist', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getTldInfo('thisdoesnotexist').catch(function(err) {
+      return transipInstance.domainService.getTldInfo('thisdoesnotexist').catch(function(err) {
         expect(err.message).to.eql('102: The TLD \'.thisdoesnotexist\' could not be found.');
       }).then(done, done);
     });
 
     it( 'should catch error for empty tld', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getTldInfo().catch(function(err) {
+      return transipInstance.domainService.getTldInfo().catch(function(err) {
         expect(err.message).to.eql('404');
       }).then(done, done);
     });
@@ -911,21 +912,21 @@ describe('I:TransIP:domainService', function() {
 
     it( 'should return info', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getCurrentDomainAction('sillevis.net').then(function(response) {
+      return transipInstance.domainService.getCurrentDomainAction('sillevis.net').then(function(response) {
         expect(response.hasFailed).to.eql('false');
       }).then(done, done);
     });
 
     it( 'should throw error without domain', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getCurrentDomainAction().catch(function(err) {
+      return transipInstance.domainService.getCurrentDomainAction().catch(function(err) {
         expect(err.message).to.eql('404');
       }).then(done, done);
     });
 
     it( 'should return error from transip', function(done) {
       this.timeout(30000);
-      transipInstance.domainService.getCurrentDomainAction('dualdev.com').catch(function(err) {
+      return transipInstance.domainService.getCurrentDomainAction('dualdev.com').catch(function(err) {
         expect(err.message).to.eql('102: One or more domains could not be found.');
       }).then(done, done);
     });
@@ -993,7 +994,7 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
-  describe.only( 'cancelDomainAction', function() {
+  describe( 'cancelDomainAction', function() {
     var transipInstance;
     beforeEach(function() {
       transipInstance = new TransIP();
