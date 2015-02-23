@@ -211,6 +211,180 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe( 'getAuthCode', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+    it( 'should return authCode', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getAuthCode('sillevis.net').then(function(authCode) {
+        expect(authCode).to.be.ok();
+        expect(typeof authCode).to.eql('string');
+      }).then(done, done);
+    });
+
+    it( 'should throw error on unknown domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getAuthCode('askjdaskdjfhajkfhjakldfsahfkjsadhfjkasdhfjks.net').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getAuthCode().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'getIsLocked', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+    it( 'should return isLocked', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getIsLocked('sillevis.net').then(function(isLocked) {
+        expect(typeof isLocked).to.eql('boolean');
+        expect(isLocked).to.eql(false);
+      }).then(done, done);
+    });
+
+    it( 'should throw error on unknown domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getIsLocked('askjdaskdjfhajkfhjakldfsahfkjsadhfjkasdhfjks.net').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.getIsLocked().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'register', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'sillevis-test.nl'
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should return success, with different nameservers', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'sillevis-test2.nl',
+        'nameservers': {
+          'item': [{
+            'hostname': 'ns01.dualdev.com',
+            'ipv4': '',
+            'ipv6': ''
+          }, {
+            'hostname': 'ns02.dualdev.com',
+            'ipv4': '',
+            'ipv6': ''
+          }, {
+            'hostname': 'ns03.dualdev.com',
+            'ipv4': '',
+            'ipv6': ''
+          }]
+        }
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should return success, with different contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'sillevis-test2.nl',
+        'contacts': {
+          'item': [{
+            'type': 'registrant',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'info@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'administrative',
+            'firstName': 'René',
+            'middleName': null,
+            'lastName': 'van Sweeden',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'sales@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'technical',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'tech@dualdev.com',
+            'country': 'NL' // Two letter code
+          }]
+        }
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should return error, domain already registered', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'transip.nl'
+      }).catch(function(err) {
+        expect(err.message).to.eql('303: The domain \'transip.nl\' is not free and thus cannot be registered.');
+      }).then(done, done);
+    });
+
+    it( 'should return error, domain not available', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.register({
+        'name': 'transip.transip-test'
+      }).catch(function(err) {
+        expect(err.message).to.eql('301: This is not a valid domain name: \'transip.transip-test\'');
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {

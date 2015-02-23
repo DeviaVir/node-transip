@@ -14,11 +14,24 @@ exports.urlencodeParameters = function urlencodeParameters(parameters, keyPrefix
 
   var encodedData = [];
   Object.keys(parameters).forEach(function(key) {
-    var encodedKey = (keyPrefix === false ? exports.urlencode(key) : keyPrefix + '[' + exports.urlencode(key) + ']');
+    var encodedKey;
+    if(key === 'item') { // custom hack for transip items
+      encodedKey = (keyPrefix === false ? exports.urlencode(key) : keyPrefix);
+    }
+    else {
+      encodedKey = (keyPrefix === false ? exports.urlencode(key) : keyPrefix + '[' + exports.urlencode(key) + ']');
+    }
+
     if(parameters[key] !== void 0) {
       var value = parameters[key];
-      if(typeof value === 'object') {
+      if(value === null) {
+        encodedData.push(encodedKey + '=');
+      }
+      else if(typeof value === 'object') {
         encodedData.push(exports.urlencodeParameters(value, encodedKey));
+      }
+      else if(typeof value === 'boolean') {
+        encodedData.push(encodedKey + '=' + (value === true ? 1 : ''));
       }
       else {
         encodedData.push(encodedKey + '=' + exports.urlencode(value));
