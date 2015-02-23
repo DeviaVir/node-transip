@@ -1,6 +1,5 @@
 var Promise = require( 'bluebird' ),
     sinon = require('sinon'),
-    parseString = require('xml2js').parseString,
     moment = require('moment');
 
 var TransIP = require( '../transip' );
@@ -512,18 +511,15 @@ describe('I:TransIP:domainService', function() {
         'hostname': 'tim.ns.cloudflare.com',
         'ipv4': '',
         'ipv6': ''
-      }).then(function(body) {
-        // The check for promise.resolve is actually enough, but let's make sure the API isn't doing any crazy stuff 
-        parseString(body[1], function (err, result) {
-          expect(result['SOAP-ENV:Envelope']['SOAP-ENV:Body']).to.be.ok();
-        });
+      }).then(function(response) {
+        expect(response).to.eql(true);
       }).then(done, done);
     });
 
     it( 'should throw error without nameservers', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.setNameservers('sillevis.net').catch(function(err) {
-        expect(err.message).to.eql('403');
+        expect(err.message).to.eql('405');
       }).then(done, done);
     });
 
@@ -707,9 +703,146 @@ describe('I:TransIP:domainService', function() {
         'email': 'info@dualdev.com',
         'country': 'NL' // Two letter code
       }).catch(function(err) {
-        console.log(err); /** This should throw an error! TransIP says it's fine! */
+        console.log('err', err); /** This should throw an error! TransIP says it's fine.. */
       }).then(function(response) {
         expect(response).to.eql(true);
+      }).then(done, done);
+    });
+  });
+
+  describe( 'setContacts', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts('sillevis.net', {
+        'item': [{
+          'type': 'registrant',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'info@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'administrative',
+          'firstName': 'René',
+          'middleName': null,
+          'lastName': 'van Sweeden',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'sales@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'technical',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'tech@dualdev.com',
+          'country': 'NL' // Two letter code
+        }]
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error from transip when domain does not belong to me', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts('dualdev.com', {
+        'item': [{
+          'type': 'registrant',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'info@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'administrative',
+          'firstName': 'René',
+          'middleName': null,
+          'lastName': 'van Sweeden',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'sales@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'technical',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'tech@dualdev.com',
+          'country': 'NL' // Two letter code
+        }]
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).catch(function(err) {
+        console.log('err', err); /** This should throw an error! TransIP says it's fine.. */
+      }).then(done, done);
+    });
+
+    it( 'should throw error without contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts('sillevis.net').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts().catch(function(err) {
+        expect(err.message).to.eql('404');
       }).then(done, done);
     });
   });
