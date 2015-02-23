@@ -96,7 +96,7 @@ describe('I:TransIP:domainService', function() {
       this.timeout(30000);
       return transipInstance.domainService.getWhois('sillevis.net').then(function(whois) {
         expect(whois).to.contain('SILLEVIS.NET');
-        expect(whois).to.contain('Status: ok');
+        expect(whois).to.contain('Status: clientTransferProhibited');
       }).then(done, done);
     });
 
@@ -143,7 +143,7 @@ describe('I:TransIP:domainService', function() {
         expect(info.dnsEntries).to.be.ok();
         expect(info.branding).to.be.ok();
         expect(info.name).to.eql('sillevis.net');
-        expect(info.isLocked).to.eql('false');
+        expect(info.isLocked).to.eql('true');
         expect(moment(info.registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2010-05-16');
       }).then(done, done);
     });
@@ -176,7 +176,7 @@ describe('I:TransIP:domainService', function() {
         expect(info[1].branding).to.be.ok();
         expect(info[0].name).to.eql('sillevis.net');
         expect(info[1].name).to.eql('sierveld.me');
-        expect(info[0].isLocked).to.eql('false');
+        expect(info[0].isLocked).to.eql('true');
         expect(info[1].isLocked).to.eql('false');
         expect(moment(info[0].registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2010-05-16');
         expect(moment(info[1].registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2011-03-08');
@@ -198,7 +198,7 @@ describe('I:TransIP:domainService', function() {
         expect(info.dnsEntries).to.be.ok();
         expect(info.branding).to.be.ok();
         expect(info.name).to.eql('sillevis.net');
-        expect(info.isLocked).to.eql('false');
+        expect(info.isLocked).to.eql('true');
         expect(moment(info.registrationDate, 'X').format('YYYY-MM-DD')).to.eql('2010-05-16');
       }).then(done, done);
     });
@@ -248,7 +248,7 @@ describe('I:TransIP:domainService', function() {
       this.timeout(30000);
       return transipInstance.domainService.getIsLocked('sillevis.net').then(function(isLocked) {
         expect(typeof isLocked).to.eql('boolean');
-        expect(isLocked).to.eql(false);
+        expect(isLocked).to.eql(true);
       }).then(done, done);
     });
 
@@ -409,6 +409,93 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe( 'transferWithOwnerChange', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    /** Cannot be truthy tested.. */
+
+    it( 'should return error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.transferWithOwnerChange({
+        'name': 'sillevis-test2.nl',
+        'contacts': {
+          'item': [{
+            'type': 'registrant',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'info@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'administrative',
+            'firstName': 'René',
+            'middleName': null,
+            'lastName': 'van Sweeden',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'sales@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'technical',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'tech@dualdev.com',
+            'country': 'NL' // Two letter code
+          }]
+        }
+      }, '12345abcdef').catch(function(err) {
+        expect(err.message).to.eql('303: The domain \'sillevis-test2.nl\' is free and thus cannot be transfered.');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'transferWithoutOwnerChange', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    /** Cannot be truthy tested.. */
+
+    it( 'should return error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.transferWithoutOwnerChange({
+        'name': 'sillevis-test3.nl'
+      }, '12345abcdef').catch(function(err) {
+        expect(err.message).to.eql('303: The domain \'sillevis-test3.nl\' is free and thus cannot be transfered.');
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {
@@ -444,6 +531,67 @@ describe('I:TransIP:domainService', function() {
       this.timeout(30000);
       return transipInstance.domainService.setNameservers().catch(function(err) {
         expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'setLock', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should set a lock', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setLock('sillevis.net').then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error 404', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setLock().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw transip error', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setLock('sillevis-test4.net').catch(function(err) {
+        expect(err.message).to.contain('100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (INTERNAL)'); // This cannot possible be correct, contacted transip API
+      }).then(done, done);
+    });
+  });
+
+  describe( 'unsetLock', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should set a lock', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.unsetLock('sillevis.net').then(function(response) {
+        expect(response).to.eql(true);
+      }).then(function() {
+        /** Lock my domain again please */
+        return transipInstance.domainService.setLock('sillevis.net').then(function(response) {
+          expect(response).to.eql(true);
+        });
+      }).then(done, done);
+    });
+
+    it( 'should throw error 404', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.unsetLock().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw transip error', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.unsetLock('sillevis-test4.net').catch(function(err) {
+        expect(err.message).to.contain('100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (INTERNAL)'); // This cannot possible be correct, contacted transip API
       }).then(done, done);
     });
   });
