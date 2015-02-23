@@ -409,6 +409,93 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe( 'transferWithOwnerChange', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    /** Cannot be truthy tested.. */
+
+    it( 'should return error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.transferWithOwnerChange({
+        'name': 'sillevis-test2.nl',
+        'contacts': {
+          'item': [{
+            'type': 'registrant',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'info@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'administrative',
+            'firstName': 'René',
+            'middleName': null,
+            'lastName': 'van Sweeden',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'sales@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'technical',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'tech@dualdev.com',
+            'country': 'NL' // Two letter code
+          }]
+        }
+      }, '12345abcdef').catch(function(err) {
+        expect(err.message).to.eql('303: The domain \'sillevis-test2.nl\' is free and thus cannot be transfered.');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'transferWithoutOwnerChange', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    /** Cannot be truthy tested.. */
+
+    it( 'should return error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.transferWithoutOwnerChange({
+        'name': 'sillevis-test3.nl'
+      }, '12345abcdef').catch(function(err) {
+        expect(err.message).to.eql('303: The domain \'sillevis-test3.nl\' is free and thus cannot be transfered.');
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {
