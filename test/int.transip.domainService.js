@@ -912,9 +912,7 @@ describe('I:TransIP:domainService', function() {
     it( 'should return info', function(done) {
       this.timeout(30000);
       transipInstance.domainService.getCurrentDomainAction('sillevis.net').then(function(response) {
-        expect(response.name).to.eql(null);
         expect(response.hasFailed).to.eql('false');
-        expect(response.message).to.eql(null);
       }).then(done, done);
     });
 
@@ -928,6 +926,38 @@ describe('I:TransIP:domainService', function() {
     it( 'should return error from transip', function(done) {
       this.timeout(30000);
       transipInstance.domainService.getCurrentDomainAction('dualdev.com').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+  });
+  
+  describe( 'retryCurrentDomainActionWithNewData', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success, with different contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryCurrentDomainActionWithNewData({
+        'name': 'sillevis.net'
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without data', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryCurrentDomainActionWithNewData().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should return error from transip for unknown domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryCurrentDomainActionWithNewData({
+        'name': 'sillevis-test2.nl'
+      }).catch(function(err) {
         expect(err.message).to.eql('102: One or more domains could not be found.');
       }).then(done, done);
     });
