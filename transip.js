@@ -18,8 +18,7 @@ var domainService = require(__dirname + '/lib/domainService');
  * @prototype
  * @class  TransIP
  */
-function TransIP(login, privateKey, data) {
-  this.data = data || {}; 
+function TransIP(login, privateKey) {
   this.version = 5.1;
   this.mode = 'readwrite';
   this.endpoint = 'api.transip.nl';
