@@ -385,6 +385,30 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
+  describe( 'cancel', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should cancel the domain end of contract', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancel('nandlal.nl', 'end').then(function(response) {
+        expect(response).to.eql(true);
+      }).catch(function(err) {
+        // Could be that the domain is already cancelled
+        expect(err.message).to.contain('403: De opzegging kan niet worden bevestigd omdat een of meerdere diensten in deze opzegging reeds zijn bevestigd.');
+      }).then(done, done);
+    });
+
+    it( 'should return error for unknown domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancel('dualdev.com', 'immediately').catch(function(err) {
+        expect(err.message).to.eql('102: The domain \'dualdev.com\' could not be found in your account.');
+      }).then(done, done);
+    });
+  });
+
   describe( 'setNameservers', function() {
     var transipInstance;
     beforeEach(function() {

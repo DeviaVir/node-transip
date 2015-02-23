@@ -27,7 +27,7 @@ node_modules
 # Users Environment Variables
 .lock-wscript
 
-# User dependent data
+# User data
 config/data.js
 
 # NPM logs
