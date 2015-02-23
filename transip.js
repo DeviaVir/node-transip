@@ -81,7 +81,7 @@ TransIP.prototype.communicate = function communicate(service, method, data, form
   formattedData = formattedData || null;
 
   return this.createClient(service, method, data).then(function(client) {
-    console.log(util.inspect(client.describe().DomainServiceService.DomainServicePort[(method)], true, 100, true));
+    //console.log(util.inspect(client.describe().DomainServiceService.DomainServicePort[(method)], true, 100, true));
     return Promise.promisify(client[(method)].bind(client))(formattedData);
   });
 };
@@ -117,9 +117,7 @@ TransIP.prototype.xmlResolver = function xmlResolver(array) {
  */
 TransIP.prototype.sign = function sign(params) {
   params = utils.urlencodeParameters(params) || {};
-
-  console.log(params);
-  
+  //console.log(params);
   return crypto.createSign('RSA-SHA512').update(params).sign(this.privateKey, 'base64');
 };
 

@@ -29,7 +29,7 @@
     "sinon-chai": "^2.6.0"
   },
   "description": "*Work in progress! Not safe for work.*",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "transip.js",
   "directories": {
     "test": "test"
