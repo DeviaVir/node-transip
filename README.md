@@ -1,4 +1,3 @@
 # node-transip
 
-[![Build Status](https://travis-ci.org/DualDev/node-transip.svg)](https://travis-ci.org/DualDev/node-transip)
-
+[![Circle CI](https://circleci.com/gh/DualDev/node-transip.svg?style=svg)](https://circleci.com/gh/DualDev/node-transip)
