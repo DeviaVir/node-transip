@@ -846,4 +846,60 @@ describe('I:TransIP:domainService', function() {
       }).then(done, done);
     });
   });
+
+  describe( 'getAllTldInfos', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return array of TLDs', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getAllTldInfos().then(function(response) {
+        expect(response.length).to.be.greaterThan(0);
+      }).then(done, done);
+    });
+  });
+
+  describe.only( 'getTldInfo', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return info about .nl', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('nl').then(function(response) {
+        expect(response.name).to.eql('.nl');
+      }).then(done, done);
+    });
+
+    it( 'should return info about .vote', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('vote').then(function(response) {
+        expect(response.name).to.eql('.vote');
+      }).then(done, done);
+    });
+
+    it( 'should return info about .com', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('com').then(function(response) {
+        expect(response.name).to.eql('.com');
+      }).then(done, done);
+    });
+
+    it( 'should catch error for .thisdoesnotexist', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('thisdoesnotexist').catch(function(err) {
+        expect(err.message).to.eql('102: The TLD \'.thisdoesnotexist\' could not be found.');
+      }).then(done, done);
+    });
+
+    it( 'should catch error for empty tld', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
 });
