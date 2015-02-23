@@ -93,9 +93,9 @@ describe('I:TransIP:domainService', function() {
 
     it( 'should return whois information (net)', function(done) {
       this.timeout(30000);
-      return transipInstance.domainService.getWhois('sillevis.net').then(function(whois) {
+      return transipInstance.domainService.getWhois('sierveld.me').then(function(whois) {
         expect(whois).to.contain('SILLEVIS.NET');
-        expect(whois).to.contain('Status: clientTransferProhibited');
+        expect(whois).to.contain('Status: ok');
       }).then(done, done);
     });
 
@@ -861,7 +861,7 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
-  describe.only( 'getTldInfo', function() {
+  describe( 'getTldInfo', function() {
     var transipInstance;
     beforeEach(function() {
       transipInstance = new TransIP();
@@ -898,6 +898,128 @@ describe('I:TransIP:domainService', function() {
     it( 'should catch error for empty tld', function(done) {
       this.timeout(30000);
       transipInstance.domainService.getTldInfo().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'getCurrentDomainAction', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return info', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getCurrentDomainAction('sillevis.net').then(function(response) {
+        expect(response.hasFailed).to.eql('false');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getCurrentDomainAction().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should return error from transip', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getCurrentDomainAction('dualdev.com').catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+  });
+  
+  describe( 'retryCurrentDomainActionWithNewData', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success, with different contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryCurrentDomainActionWithNewData({
+        'name': 'sillevis.net'
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without data', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryCurrentDomainActionWithNewData().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should return error from transip for unknown domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryCurrentDomainActionWithNewData({
+        'name': 'sillevis-test2.nl'
+      }).catch(function(err) {
+        expect(err.message).to.eql('102: One or more domains could not be found.');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'retryTransferWithDifferentAuthCode', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success, with different contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryTransferWithDifferentAuthCode({
+        'name': 'sillevis-test4.nl'
+      }, '23456789').then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without newAuthCode', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryTransferWithDifferentAuthCode('sillevis-test5.nl').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without data', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryTransferWithDifferentAuthCode().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe.only( 'cancelDomainAction', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success (error because of transip..)', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancelDomainAction({
+        'name': 'sierveld.me'
+      }).catch(function(err) {
+        expect(err.message).to.contain('100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (INTERNAL)');
+      }).then(done, done);
+    });
+
+    it( 'should return error, not my domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancelDomainAction({
+        'name': 'sillevis-test6.nl'
+      }).catch(function(err) {
+        expect(err.message).to.contain('100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (INTERNAL)');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancelDomainAction().catch(function(err) {
         expect(err.message).to.eql('404');
       }).then(done, done);
     });
