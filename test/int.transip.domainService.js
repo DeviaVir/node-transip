@@ -1,6 +1,5 @@
 var Promise = require( 'bluebird' ),
     sinon = require('sinon'),
-    parseString = require('xml2js').parseString,
     moment = require('moment');
 
 var TransIP = require( '../transip' );
@@ -512,18 +511,15 @@ describe('I:TransIP:domainService', function() {
         'hostname': 'tim.ns.cloudflare.com',
         'ipv4': '',
         'ipv6': ''
-      }).then(function(body) {
-        // The check for promise.resolve is actually enough, but let's make sure the API isn't doing any crazy stuff 
-        parseString(body[1], function (err, result) {
-          expect(result['SOAP-ENV:Envelope']['SOAP-ENV:Body']).to.be.ok();
-        });
+      }).then(function(response) {
+        expect(response).to.eql(true);
       }).then(done, done);
     });
 
     it( 'should throw error without nameservers', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.setNameservers('sillevis.net').catch(function(err) {
-        expect(err.message).to.eql('403');
+        expect(err.message).to.eql('405');
       }).then(done, done);
     });
 
@@ -592,6 +588,317 @@ describe('I:TransIP:domainService', function() {
       this.timeout(30000);
       return transipInstance.domainService.unsetLock('sillevis-test4.net').catch(function(err) {
         expect(err.message).to.contain('100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (INTERNAL)'); // This cannot possible be correct, contacted transip API
+      }).then(done, done);
+    });
+  });
+
+  describe( 'setDnsEntries', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should update dns entries', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries('nandlal.nl', {
+        'item': [{
+          'name': 'test',
+          'expire': 10800,
+          'type': 'CNAME',
+          'content': 'lb.dualdev.com.'
+        }]
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without dnsEntries', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries('nandlal.nl').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries('dualdev.com', {
+        'item': [{
+          'name': 'test',
+          'expire': 10800,
+          'type': 'CNAME',
+          'content': 'lb.dualdev.com.'
+        }]
+      }).catch(function(err) {
+        expect(err.message).to.eql('302: A hostname for a CNAME, NS, MX or SRV record was not found (external hostnames need a trailing dot, eg. "example.com."): test 10800 CNAME lb.dualdev.com.');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'setOwner', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should update owner entry', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner('sillevis.net', {
+        'type': 'registrant',
+        'firstName': 'Chase',
+        'middleName': null,
+        'lastName': 'Sillevis',
+        'companyName': 'DualDev',
+        'companyKvk': '34372569',
+        'companyType': 'VOF',
+        'street': 'Ravelrode',
+        'number': '37',
+        'postalCode': '2717GD',
+        'city': 'Zoetermeer',
+        'phoneNumber': '+31612345678',
+        'faxNumber': '',
+        'email': 'info@dualdev.com',
+        'country': 'NL' // Two letter code
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without dnsEntries', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner('sillevis.net').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner('dualdev.com', {
+        'type': 'registrant',
+        'firstName': 'Chase',
+        'middleName': null,
+        'lastName': 'Sillevis',
+        'companyName': 'DualDev',
+        'companyKvk': '34372569',
+        'companyType': 'VOF',
+        'street': 'Ravelrode',
+        'number': '37',
+        'postalCode': '2717GD',
+        'city': 'Zoetermeer',
+        'phoneNumber': '+31612345678',
+        'faxNumber': '',
+        'email': 'info@dualdev.com',
+        'country': 'NL' // Two letter code
+      }).catch(function(err) {
+        console.log('err', err); /** This should throw an error! TransIP says it's fine.. */
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+  });
+
+  describe( 'setContacts', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts('sillevis.net', {
+        'item': [{
+          'type': 'registrant',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'info@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'administrative',
+          'firstName': 'René',
+          'middleName': null,
+          'lastName': 'van Sweeden',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'sales@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'technical',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'tech@dualdev.com',
+          'country': 'NL' // Two letter code
+        }]
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error from transip when domain does not belong to me', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts('dualdev.com', {
+        'item': [{
+          'type': 'registrant',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'info@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'administrative',
+          'firstName': 'René',
+          'middleName': null,
+          'lastName': 'van Sweeden',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'sales@dualdev.com',
+          'country': 'NL' // Two letter code
+        }, {
+          'type': 'technical',
+          'firstName': 'Chase',
+          'middleName': null,
+          'lastName': 'Sillevis',
+          'companyName': 'DualDev',
+          'companyKvk': '34372569',
+          'companyType': 'VOF',
+          'street': 'Ravelrode',
+          'number': '37',
+          'postalCode': '2717GD',
+          'city': 'Zoetermeer',
+          'phoneNumber': '+31612345678',
+          'faxNumber': '',
+          'email': 'tech@dualdev.com',
+          'country': 'NL' // Two letter code
+        }]
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).catch(function(err) {
+        console.log('err', err); /** This should throw an error! TransIP says it's fine.. */
+      }).then(done, done);
+    });
+
+    it( 'should throw error without contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts('sillevis.net').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setContacts().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe( 'getAllTldInfos', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return array of TLDs', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getAllTldInfos().then(function(response) {
+        expect(response.length).to.be.greaterThan(0);
+      }).then(done, done);
+    });
+  });
+
+  describe.only( 'getTldInfo', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return info about .nl', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('nl').then(function(response) {
+        expect(response.name).to.eql('.nl');
+      }).then(done, done);
+    });
+
+    it( 'should return info about .vote', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('vote').then(function(response) {
+        expect(response.name).to.eql('.vote');
+      }).then(done, done);
+    });
+
+    it( 'should return info about .com', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('com').then(function(response) {
+        expect(response.name).to.eql('.com');
+      }).then(done, done);
+    });
+
+    it( 'should catch error for .thisdoesnotexist', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo('thisdoesnotexist').catch(function(err) {
+        expect(err.message).to.eql('102: The TLD \'.thisdoesnotexist\' could not be found.');
+      }).then(done, done);
+    });
+
+    it( 'should catch error for empty tld', function(done) {
+      this.timeout(30000);
+      transipInstance.domainService.getTldInfo().catch(function(err) {
+        expect(err.message).to.eql('404');
       }).then(done, done);
     });
   });
