@@ -962,4 +962,34 @@ describe('I:TransIP:domainService', function() {
       }).then(done, done);
     });
   });
+
+  describe.only( 'retryTransferWithDifferentAuthCode', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success, with different contacts', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryTransferWithDifferentAuthCode({
+        'name': 'sillevis-test4.nl'
+      }, '23456789').then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without newAuthCode', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryTransferWithDifferentAuthCode('sillevis-test5.nl').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without data', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.retryTransferWithDifferentAuthCode().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
 });
