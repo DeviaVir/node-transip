@@ -93,9 +93,9 @@ describe('I:TransIP:domainService', function() {
 
     it( 'should return whois information (net)', function(done) {
       this.timeout(30000);
-      return transipInstance.domainService.getWhois('sillevis.net').then(function(whois) {
+      return transipInstance.domainService.getWhois('sierveld.me').then(function(whois) {
         expect(whois).to.contain('SILLEVIS.NET');
-        expect(whois).to.contain('Status: clientTransferProhibited');
+        expect(whois).to.contain('Status: ok');
       }).then(done, done);
     });
 
@@ -963,7 +963,7 @@ describe('I:TransIP:domainService', function() {
     });
   });
 
-  describe.only( 'retryTransferWithDifferentAuthCode', function() {
+  describe( 'retryTransferWithDifferentAuthCode', function() {
     var transipInstance;
     beforeEach(function() {
       transipInstance = new TransIP();
@@ -988,6 +988,38 @@ describe('I:TransIP:domainService', function() {
     it( 'should throw error without data', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.retryTransferWithDifferentAuthCode().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+  });
+
+  describe.only( 'cancelDomainAction', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should return success (error because of transip..)', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancelDomainAction({
+        'name': 'sierveld.me'
+      }).catch(function(err) {
+        expect(err.message).to.contain('100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (INTERNAL)');
+      }).then(done, done);
+    });
+
+    it( 'should return error, not my domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancelDomainAction({
+        'name': 'sillevis-test6.nl'
+      }).catch(function(err) {
+        expect(err.message).to.contain('100: Er is een interne fout opgetreden, neem a.u.b. contact op met support. (INTERNAL)');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.cancelDomainAction().catch(function(err) {
         expect(err.message).to.eql('404');
       }).then(done, done);
     });
