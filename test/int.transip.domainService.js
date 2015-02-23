@@ -644,4 +644,73 @@ describe('I:TransIP:domainService', function() {
       }).then(done, done);
     });
   });
+
+  describe( 'setOwner', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should update owner entry', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner('sillevis.net', {
+        'type': 'registrant',
+        'firstName': 'Chase',
+        'middleName': null,
+        'lastName': 'Sillevis',
+        'companyName': 'DualDev',
+        'companyKvk': '34372569',
+        'companyType': 'VOF',
+        'street': 'Ravelrode',
+        'number': '37',
+        'postalCode': '2717GD',
+        'city': 'Zoetermeer',
+        'phoneNumber': '+31612345678',
+        'faxNumber': '',
+        'email': 'info@dualdev.com',
+        'country': 'NL' // Two letter code
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without dnsEntries', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner('sillevis.net').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setOwner('dualdev.com', {
+        'type': 'registrant',
+        'firstName': 'Chase',
+        'middleName': null,
+        'lastName': 'Sillevis',
+        'companyName': 'DualDev',
+        'companyKvk': '34372569',
+        'companyType': 'VOF',
+        'street': 'Ravelrode',
+        'number': '37',
+        'postalCode': '2717GD',
+        'city': 'Zoetermeer',
+        'phoneNumber': '+31612345678',
+        'faxNumber': '',
+        'email': 'info@dualdev.com',
+        'country': 'NL' // Two letter code
+      }).catch(function(err) {
+        console.log(err); /** This should throw an error! TransIP says it's fine! */
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+  });
 });
