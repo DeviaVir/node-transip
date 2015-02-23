@@ -595,4 +595,53 @@ describe('I:TransIP:domainService', function() {
       }).then(done, done);
     });
   });
+
+  describe( 'setDnsEntries', function() {
+    var transipInstance;
+    beforeEach(function() {
+      transipInstance = new TransIP();
+    });
+
+    it( 'should update dns entries', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries('nandlal.nl', {
+        'item': [{
+          'name': 'test',
+          'expire': 10800,
+          'type': 'CNAME',
+          'content': 'lb.dualdev.com.'
+        }]
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      }).then(done, done);
+    });
+
+    it( 'should throw error without domain', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries().catch(function(err) {
+        expect(err.message).to.eql('404');
+      }).then(done, done);
+    });
+
+    it( 'should throw error without dnsEntries', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries('nandlal.nl').catch(function(err) {
+        expect(err.message).to.eql('405');
+      }).then(done, done);
+    });
+
+    it( 'should throw error from transip', function(done) {
+      this.timeout(30000);
+      return transipInstance.domainService.setDnsEntries('dualdev.com', {
+        'item': [{
+          'name': 'test',
+          'expire': 10800,
+          'type': 'CNAME',
+          'content': 'lb.dualdev.com.'
+        }]
+      }).catch(function(err) {
+        expect(err.message).to.eql('302: A hostname for a CNAME, NS, MX or SRV record was not found (external hostnames need a trailing dot, eg. "example.com."): test 10800 CNAME lb.dualdev.com.');
+      }).then(done, done);
+    });
+  });
 });
