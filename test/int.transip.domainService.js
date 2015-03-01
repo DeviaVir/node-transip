@@ -566,19 +566,17 @@ describe('I:TransIP:domainService', function() {
       transipInstance = new TransIP();
     });
 
-    it( 'should set a lock', function(done) {
+    /*it( 'should set a lock', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.unsetLock('sillevis.net').then(function(response) {
-        //expect(response).to.eql(true);
-      }).catch(function(err) {
-        console.log('err', err); // Sometimes TransIP breaks
+        expect(response).to.eql(true);
       }).then(function() {
-        /** Lock my domain again please */
+        // Lock my domain again please
         return transipInstance.domainService.setLock('sillevis.net').then(function(response) {
-          //expect(response).to.eql(true);
+          expect(response).to.eql(true);
         });
       }).then(done, done);
-    });
+    });*/
 
     it( 'should throw error 404', function(done) {
       this.timeout(30000);
