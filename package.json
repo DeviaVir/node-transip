@@ -28,8 +28,8 @@
     "sinon": "^1.12.2",
     "sinon-chai": "^2.6.0"
   },
-  "description": "*Work in progress! Not safe for work.*",
-  "version": "0.0.3",
+  "description": "Node.JS Promise-based library to communicate with the TransIP API",
+  "version": "0.0.4",
   "main": "transip.js",
   "directories": {
     "test": "test"

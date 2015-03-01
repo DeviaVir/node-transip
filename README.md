@@ -1,9 +1,9 @@
 # node-transip
-
-*Work in progress! Not safe for work.*
-
+Node.JS Promise-based library to communicate with the TransIP API
 
 This library creates a new instance of "TransIP" for you, exposing a few libraries and methods you can use to communicate.
+
+**Currently only the DomainService methods are supported**
 
 To start a new TransIP instance:
 
