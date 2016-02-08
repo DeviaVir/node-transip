@@ -271,6 +271,77 @@ describe('I:TransIP:domainService', function() {
       transipInstance = new TransIP();
     });
 
+    it( 'should return success, full combo', function(done) {
+      this.timeout(30000);
+      var nameservers = ['ns01.dualdev.com','ns02.dualdev.com','ns03.dualdev.com'],
+          contactItems = [{
+            'type': 'registrant',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'info@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'administrative',
+            'firstName': 'René',
+            'middleName': null,
+            'lastName': 'van Sweeden',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'sales@dualdev.com',
+            'country': 'NL' // Two letter code
+          }, {
+            'type': 'technical',
+            'firstName': 'Chase',
+            'middleName': null,
+            'lastName': 'Sillevis',
+            'companyName': 'DualDev',
+            'companyKvk': '34372569',
+            'companyType': 'VOF',
+            'street': 'Ravelrode',
+            'number': '37',
+            'postalCode': '2717GD',
+            'city': 'Zoetermeer',
+            'phoneNumber': '+31612345678',
+            'faxNumber': '',
+            'email': 'tech@dualdev.com',
+            'country': 'NL' // Two letter code
+          }];
+      return transipInstance.domainService.register({
+        'name': 'sillevis-test.nl',
+        'nameservers': {
+          'item': nameservers.map(function(nameserver) {
+            return {
+              'hostname': nameserver,
+              'ipv4': '',
+              'ipv6': ''
+            };
+          })
+        },
+        'contacts': {
+          'item': contactItems
+        }
+      }).then(function(response) {
+        expect(response).to.eql(true);
+      });
+    });
+
     it( 'should return success', function(done) {
       this.timeout(30000);
       return transipInstance.domainService.register({
