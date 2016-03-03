@@ -29,7 +29,7 @@
     "sinon-chai": "^2.6.0"
   },
   "description": "Node.JS Promise-based library to communicate with the TransIP API",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "transip.js",
   "directories": {
     "test": "test"
