@@ -3,7 +3,7 @@ var Promise = require( 'bluebird' )
 
 // Utils
 exports.urlencode = function urlencode(string) {
-  return encodeURIComponent(string);
+  return encodeURIComponent(string).replace(/\*/g, '%2A');;
 };
 exports.urlencodeParameters = function urlencodeParameters(parameters, keyPrefix) {
   keyPrefix = keyPrefix || false;
