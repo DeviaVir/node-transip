@@ -16,7 +16,7 @@
     "soap": "git://github.com/DeviaVir/node-soap.git",
     "soap-cookie": "^0.10.0",
     "uuid": "^2.0.1",
-    "xml2js": "^0.4.5"
+    "xml2js": "^0.5.0"
   },
   "devDependencies": {
     "chai": "^1.10.0",
